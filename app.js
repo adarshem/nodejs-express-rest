@@ -1,5 +1,6 @@
 import express from 'express';
 import authRoutes from './routes/auth.js';
+import './config/db/database.js'; // Import database configuration
 
 const app = express();
 

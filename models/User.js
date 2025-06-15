@@ -1,60 +1,37 @@
-const mongoose = require('mongoose');
+import db from '../config/db/database.js';
 
-const userSchema = new mongoose.Schema({
-    username: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true,
-        minlength: 3
-    },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true,
-        lowercase: true
-    },
-    password: {
-        type: String,
-        required: true,
-        minlength: 6
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
+class User {
+    static create({ username, email, password }) {
+        const stmt = db.prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)');
+        return stmt.run(username, email, password);
     }
-});
 
-const User = mongoose.model('User', userSchema);
+    static findAll() {
+        const stmt = db.prepare('SELECT id, username, email, created_at FROM users');
+        return stmt.all();
+    }
 
-// In-memory storage for users (temporary solution)
-const users = [];
+    static findById(id) {
+        const stmt = db.prepare('SELECT id, username, email, created_at FROM users WHERE id = ?');
+        return stmt.get(id);
+    }
 
-function createUser(userData) {
-    const newUser = {
-        id: Date.now().toString(),
-        username: userData.username,
-        email: userData.email,
-        password: userData.password, // In a real app, this should be hashed
-        createdAt: new Date()
-    };
-    users.push(newUser);
-    return newUser;
+    static findByEmail(email) {
+        const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
+        return stmt.get(email);
+    }
+
+    static update(id, { username, email, password }) {
+        const stmt = db.prepare('UPDATE users SET username = ?, email = ?, password = ? WHERE id = ?');
+        return stmt.run(username, email, password, id);
+    }
+
+    static delete(id) {
+        const stmt = db.prepare('DELETE FROM users WHERE id = ?');
+        return stmt.run(id);
+    }
 }
 
-function findByEmail(email) {
-    return users.find(user => user.email === email);
-}
-
-function findById(id) {
-    return users.find(user => user.id === id);
-}
-
-export {
-    createUser,
-    findByEmail,
-    findById
-};
+export default User;
 
  

@@ -1,17 +1,18 @@
-import { createUser, findByEmail } from '../models/User.js';
+import User from '../models/User.js';
 
 function signup(req, res) {
     try {
         const { username, email, password } = req.body;
 
         // Check if user already exists
-        const existingUser = findByEmail(email);
+        const existingUser = User.findByEmail(email);
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
 
         // Create new user
-        const newUser = createUser({ username, email, password });
+        const result = User.create({ username, email, password });
+        const newUser = User.findById(result.lastInsertRowid);
 
         // Return success response (excluding password)
         const { password: _, ...userWithoutPassword } = newUser;
@@ -29,7 +30,7 @@ function login(req, res) {
         const { email, password } = req.body;
 
         // Find user by email
-        const user = findByEmail(email);
+        const user = User.findByEmail(email);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
