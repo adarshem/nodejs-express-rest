@@ -1,9 +1,11 @@
 import db from '../config/db/database.js';
+import bcrypt from 'bcryptjs';
 
 class User {
-    static create({ username, email, password }) {
+    static async create({ username, email, password }) {
+        const hashedPassword = await bcrypt.hash(password, 10);
         const stmt = db.prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)');
-        return stmt.run(username, email, password);
+        return stmt.run(username, email, hashedPassword);
     }
 
     static findAll() {
@@ -21,9 +23,10 @@ class User {
         return stmt.get(email);
     }
 
-    static update(id, { username, email, password }) {
+    static async update(id, { username, email, password }) {
+        const hashedPassword = await bcrypt.hash(password, 10);
         const stmt = db.prepare('UPDATE users SET username = ?, email = ?, password = ? WHERE id = ?');
-        return stmt.run(username, email, password, id);
+        return stmt.run(username, email, hashedPassword, id);
     }
 
     static delete(id) {
